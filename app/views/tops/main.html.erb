@@ -72,10 +72,30 @@
 
 
 <h2>今日のQAリーダです</h2>
-<% @days.each do |user| %>
-	<%= Staff.find_by(air_staff_id: user.qastaff_id).name %>
-	<%= user.start.strftime("%H:%M") %>~<%= user.end.strftime("%H:%M") %>
-<% end %>
+<table>
+	<thead>
+		<th style="text-align: left">名前</th><th>QA時間</th>
+	</thead>
+	<tbody>
+		<% @days.each do |user| %>
+			<tr>
+				<td>
+					<%= Staff.find_by(air_staff_id: user.qastaff_id).name %>
+					
+				</td>
+				<td>
+					<%= user.start.strftime("%H:%M") %>
+				</td>
+				<td>
+					~
+				</td>
+				<td>
+					　<%= user.end.strftime("%H:%M") %>
+				</td>
+			</tr>
+		<% end %>
+	</tbody>
+</table>
 
 <h2>メンバー全員の名前です</h2>
 <% @staffs.each do |user| %>
