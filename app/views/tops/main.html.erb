@@ -79,19 +79,9 @@
 	<tbody>
 		<% @days.each do |user| %>
 			<tr>
-				<td>
-					<%= Staff.find_by(air_staff_id: user.qastaff_id).name %>
-					
-				</td>
-				<td>
-					<%= user.start.strftime("%H:%M") %>
-				</td>
-				<td>
-					~
-				</td>
-				<td>
-					　<%= user.end.strftime("%H:%M") %>
-				</td>
+				<td><%= Staff.find_by(air_staff_id: user.qastaff_id).name %></td>
+				<td><%= user.start.strftime("%H:%M") %></td>
+				<td>~</td><td>　<%= user.end.strftime("%H:%M") %></td>
 			</tr>
 		<% end %>
 	</tbody>
