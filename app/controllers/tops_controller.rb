@@ -190,6 +190,16 @@ class TopsController < ApplicationController
 			staff.shifts.where(date: Date.today).each do |today_shift|
 				if today_shift.group_id == "wcp研修"
 					rest_new.rest_time = 0
+					rest_new.rest_start = 0
+					rest_new.group_id = 3546
+				elsif rest_new.group_id != "wcp研修"
+					if today_shift.group_id == "wc"
+						rest_new.group_id = 3385
+					elsif today_shift.group_id == "wcp"
+						rest_new.group_id = 3386
+					elsif today_shift.group_id == "プロダクト" && rest_new.group_id == nil
+						rest_new.group_id = 3545
+					end	
 				end
 			end
 
@@ -209,20 +219,22 @@ class TopsController < ApplicationController
 					end
 				end
 
-				# 遅くなりすぎると戻る
-				if rest_hour > 19
+				# 19時半以降に休憩が始まる場合は最初に戻る
+				if rest_hour > 19 || (rest_hour == 19 && rest_minute == 30)
 					rest_hour = 17
 				end
 			end
 			#休憩がある人だけを保存する
-			if rest_new.rest_time != nil && rest_new.rest_start != nil
+			if rest_new.rest_time != nil
+				if rest_new.rest_start != nil
 			# 休憩がシフトの時間中に入っているかの確認
-				if rest_new.rest_start - rest_new.staff.today_start < Rational(1, 12)
-					# これはシフトが始まってから２時間立たないうちに休憩に入る場合
-					rest_new.rest_start = rest_new.staff.today_start + Rational(1, 12)
-				elsif rest_new.staff.today_end - rest_new.rest_start < Rational(1, 12)
-					#これはシフトが終わりから２時間以内に休憩が入る場合
-					rest_new.rest_start = rest_new.staff.today_end - Rational(1, 8)
+					if rest_new.rest_start - rest_new.staff.today_start < Rational(1, 12)
+						# これはシフトが始まってから２時間立たないうちに休憩に入る場合
+						rest_new.rest_start = rest_new.staff.today_start + Rational(1, 12)
+					elsif rest_new.staff.today_end - rest_new.rest_start < Rational(1, 12)
+						#これはシフトが終わりから２時間以内に休憩が入る場合
+						rest_new.rest_start = rest_new.staff.today_end - Rational(1, 8)
+					end
 				end
 				rest_new.save
 			end
@@ -232,7 +244,7 @@ class TopsController < ApplicationController
 	def post_slack
 	#スラックで送信する
 	    notifier = Slack::Notifier.new(
-				""
+				"https://hooks.slack.com/services/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"
 		) #取得したslackのWebhook URL
 		# 全員の情報
 		# notifier.ping(staffs)
@@ -276,7 +288,7 @@ class TopsController < ApplicationController
 		notifier.ping("【今日(#{today})のシフト】\n" + today_staffs + "\n")
 		notifier.ping("【今日(#{today})の休憩シフト】\n" + today_rests)
 		notifier.ping("【今日(#{today})の新人研修予定】\n" + today_trainings + "\n")
-		notifier.ping("教室の様子見て人数的に余裕がありそうなら早めに休憩取って下さい。＊漏れ＊ 、 ＊抜け＊ 、 ＊足りない＊ 、 ＊入ってない＊ 、 ＊ブッキング＊ などありましたら下記のURLからアクセスして訂正ください。訂正した分が自動的にこのチャンネルに登録されます。本日もよろしくお願いいたします! ")
+		notifier.ping("教室の様子見て人数的に余裕がありそうなら早めに休憩取って下さい。＊漏れ＊ 、 ＊抜け＊ 、 ＊足りない＊ 、 ＊入ってない＊ 、 ＊ブッキング＊ などありましたら下記のURLからアクセスして訂正ください。訂正した分が自動的にこのチャンネルに投稿されます。本日もよろしくお願いいたします! ")
 		notifier.ping("http://localhost:3000/main")
 	end
 
@@ -478,7 +490,16 @@ class TopsController < ApplicationController
 
 	def rest_update
 		rest = Rest.find(params[:id])
+		before_start = rest.rest_start
+		before_end = rest.rest_start + rest.rest_time * 60
 		rest.update(rest_params)
+		notifier = Slack::Notifier.new(
+				""
+		)
+		message = rest.staff.name + "さんの休憩時間を" + before_start.strftime("%H:%M") + "~" + before_end.strftime("%H:%M") + "から" + rest.rest_start.strftime("%H:%M") + "~" + (rest.rest_start + rest.rest_time * 60).strftime("%H:%M") + "に変更しました。ご確認お願いします。"
+
+
+		notifier.ping(message)
 		redirect_to main_path
 	end
 

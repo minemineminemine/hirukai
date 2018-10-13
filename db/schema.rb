@@ -21,7 +21,6 @@ ActiveRecord::Schema.define(version: 2018_10_02_235533) do
   create_table "days", force: :cascade do |t|
     t.date "shift_day"
     t.string "qastaff_id"
-    t.integer "breakstaff_id"
     t.datetime "start"
     t.datetime "end"
     t.datetime "created_at", null: false
@@ -30,6 +29,7 @@ ActiveRecord::Schema.define(version: 2018_10_02_235533) do
 
   create_table "rests", force: :cascade do |t|
     t.integer "staff_id"
+    t.integer "group_id"
     t.date "day"
     t.integer "rest_time"
     t.datetime "rest_start"

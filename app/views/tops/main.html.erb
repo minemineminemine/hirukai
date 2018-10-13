@@ -53,8 +53,9 @@
 		<th>名前</th><th>休憩時間</th>
 	</thead>
 	<tbody>
-		<% @rests.each do |rest| %>
+		<% @rests.order("group_id").each do |rest| %>
 			<tr>
+				<td><%= rest.group_id %></td>
 				<td><%= rest.staff.name %></td>
 				<td>
 					<% if rest.rest_time != 0 %>
