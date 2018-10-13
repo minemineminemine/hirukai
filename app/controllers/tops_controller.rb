@@ -155,7 +155,7 @@ class TopsController < ApplicationController
 					else
 						qa.push(g.sample)
 					end
-					if qa[0][1] == DateTime.parse("#{Date.today} 13:00:00")
+					if qa[0][1].hour == 13
 						qa[1][1] = qa[0][2]
 					else
 						qa[1][2] = qa[0][1]
