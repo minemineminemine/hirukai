@@ -23,34 +23,38 @@
 </table>
 
 <h2>今日の新人研修です</h2>
-<table>
-	<thead>
-		<th>分類</th><th>名前</th><th>時間</th>
-	</thead>
-	<tbody>
-		<% @today_trains.each do |train_shift| %>
-			<div class = "train_staff">
-				<tr>
-					<td>
-						<% if train_shift.which == "training" %>
-							(研修)
-						<% else %>
-							(OJT)
-						<% end %>
-					</td>
-					<td><%= train_shift.staff.name %></td>
-					<td><%= train_shift.start.strftime("%H:%M") %>~<%= train_shift.end.strftime("%H:%M") %></td>
-				</tr>
-			</div>
-		<% end %>
-	</tbody>
-</table>
+<% if @today_trains == [] %>
+	<p>今日は新人研修はありません</p>
+<% else %>
+	<table>
+		<thead>
+			<th>分類</th><th>名前</th><th>時間</th>
+		</thead>
+		<tbody>
+			<% @today_trains.each do |train_shift| %>
+				<div class = "train_staff">
+					<tr>
+						<td>
+							<% if train_shift.which == "training" %>
+								(研修)
+							<% else %>
+								(OJT)
+							<% end %>
+						</td>
+						<td><%= train_shift.staff.name %></td>
+						<td><%= train_shift.start.strftime("%H:%M") %>~<%= train_shift.end.strftime("%H:%M") %></td>
+					</tr>
+				</div>
+			<% end %>
+		</tbody>
+	</table>
+<% end %>
 
 
 <h2>今日の休憩シフトです</h2>
 <table>
 	<thead>
-		<th>名前</th><th>休憩時間</th>
+		<th></th><th>名前</th><th>休憩時間</th>
 	</thead>
 	<tbody>
 		<% @rests.order("group_id").each do |rest| %>
@@ -70,12 +74,20 @@
 	</tbody>
 </table>
 
-
 <h2>今日のQAリーダです</h2>
-<% @days.each do |user| %>
-	<%= Staff.find_by(air_staff_id: user.qastaff_id).name %>
-	<%= user.start.strftime("%H:%M") %>~<%= user.end.strftime("%H:%M") %>
-<% end %>
+<table>
+	<thead>
+		<th>名前</th><th>休憩時間</th>
+	</thead>
+	<tbody>
+		<% @days.each do |user| %>
+			<tr>
+				<td><%= Staff.find_by(air_staff_id: user.qastaff_id).name %></td>
+				<td><%= user.start.strftime("%H:%M") %>~<%= user.end.strftime("%H:%M") %></td>
+			</tr>
+		<% end %>
+	</tbody>
+</table>
 
 <h2>メンバー全員の名前です</h2>
 <% @staffs.each do |user| %>

@@ -244,7 +244,7 @@ class TopsController < ApplicationController
 	def post_slack
 	#スラックで送信する
 	    notifier = Slack::Notifier.new(
-				"https://hooks.slack.com/services/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"
+				""
 		) #取得したslackのWebhook URL
 		# 全員の情報
 		# notifier.ping(staffs)
@@ -253,8 +253,9 @@ class TopsController < ApplicationController
 		today_shifts = Shift.where(date: Date.today)
 
 		today_staffs = []
-		today_shifts.each do |today_shift|
+		today_shifts.order("group_id").each do |today_shift|
 			today_staff = today_shift.staff
+			today_staffs.push(today_shift.group_id)
 			today_staffs.push(today_staff.name + " ")
 			today_staffs.push(today_shift.start.strftime("%H:%M")+"~"+today_shift.end.strftime("%H:%M"))
 			today_staffs.push("\n")
@@ -262,7 +263,8 @@ class TopsController < ApplicationController
 
 		today_rests = []
 		rests = Rest.where(day: Date.today)
-		rests.each do |rest|
+		rests.order("group_id").each do |rest|
+			today_rests.push(rest.group_id)
 			today_rests.push(rest.staff.name)
 			if rest.rest_time != 0
 				today_rests.push(rest.rest_start.strftime("%H:%M")+"~"+(rest.rest_start + rest.rest_time*60).strftime("%H:%M"))
@@ -274,20 +276,33 @@ class TopsController < ApplicationController
 
 		today_trainings = []
 		trainings = TrainShift.where(date: Date.today)
-		trainings.each do |training|
-			today_trainings.push(training.staff.name)
-			today_trainings.push(training.start.strftime("%H:%M")+"~"+training.end.strftime("%H:%M"))
+		if trainings == []
+			today_trainings.push("今日は新人研修の予定はありません")
+		else
+			trainings.each do |training|
+				today_trainings.push(training.staff.name)
+				today_trainings.push(training.start.strftime("%H:%M")+"~"+training.end.strftime("%H:%M"))
+			end
+		end
+
+		today_qa = []
+		Day.where(shift_day: Date.today).order("start").each do |qa|
+			today_qa.push(Staff.find_by(air_staff_id: qa.qastaff_id).name)
+			today_qa.push(qa.start.strftime("%H:%M") + "~" + qa.end.strftime("%H:%M"))
+			today_qa.push("\n")
 		end
 
 		today_trainings = today_trainings.join()
 		today_staffs = today_staffs.join()
 		today_rests = today_rests.join()
+		today_qa = today_qa.join()
 
 		today = Date.today.strftime("%m/%d")
 		notifier.ping("<!here>")
 		notifier.ping("【今日(#{today})のシフト】\n" + today_staffs + "\n")
-		notifier.ping("【今日(#{today})の休憩シフト】\n" + today_rests)
-		notifier.ping("【今日(#{today})の新人研修予定】\n" + today_trainings + "\n")
+		notifier.ping("【休憩シフト】\n" + today_rests)
+		notifier.ping("【新人研修予定】\n" + today_trainings + "\n")
+		notifier.ping("【QAリーダー】\n" + today_qa + "\n")
 		notifier.ping("教室の様子見て人数的に余裕がありそうなら早めに休憩取って下さい。＊漏れ＊ 、 ＊抜け＊ 、 ＊足りない＊ 、 ＊入ってない＊ 、 ＊ブッキング＊ などありましたら下記のURLからアクセスして訂正ください。訂正した分が自動的にこのチャンネルに投稿されます。本日もよろしくお願いいたします! ")
 		notifier.ping("http://localhost:3000/main")
 	end
@@ -405,6 +420,7 @@ class TopsController < ApplicationController
 
 
 
+
 		#    #ここからデータを取りに行っている
 	    client = OAuth2::Client.new(client_id,client_secret,site: "https://accounts.google.com",token_url: "/o/oauth2/token",authorize_url: "/o/oauth2/auth")
 	    auth_token = OAuth2::AccessToken.from_hash(client,{:refresh_token => refresh_token, :expires_at => 3600})
@@ -470,6 +486,8 @@ class TopsController < ApplicationController
 	end
 
 	def main
+		# rest_shift
+		# post_slack
 		@staffs = Staff.all
 
 		#これで今日のシフトがとれる
