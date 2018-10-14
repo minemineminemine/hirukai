@@ -77,13 +77,14 @@
 <h2>今日のQAリーダです</h2>
 <table>
 	<thead>
-		<th>名前</th><th>休憩時間</th>
+		<th style="text-align: left">名前</th><th>QA時間</th>
 	</thead>
 	<tbody>
 		<% @days.each do |user| %>
 			<tr>
 				<td><%= Staff.find_by(air_staff_id: user.qastaff_id).name %></td>
-				<td><%= user.start.strftime("%H:%M") %>~<%= user.end.strftime("%H:%M") %></td>
+				<td><%= user.start.strftime("%H:%M") %></td>
+				<td>~</td><td>　<%= user.end.strftime("%H:%M") %></td>
 			</tr>
 		<% end %>
 	</tbody>
