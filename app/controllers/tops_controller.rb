@@ -116,7 +116,7 @@ class TopsController < ApplicationController
 					elsif todayshift[i][1].strftime("%Y-%m-%d %H:%M:%S") == "#{Date.today} 13:00:00" || todayshift[i][2].strftime("%Y-%m-%d %H:%M:%S") == "#{Date.today} 22:00:00"
 						justhalfday.push(todayshift[i])
 					else
-						halfday.push(todayshift)
+						# halfday.push(todayshift)
 					end
 				end
 
@@ -136,22 +136,27 @@ class TopsController < ApplicationController
 					qa.push(f)
 
 					g = []
-					if f[1] == DateTime.parse("#{Date.today} 13:00:00")
+					if f[1].hour == 13
 						justhalfday.count.times do |i|
-							if justhalfday[i][2] == DateTime.parse("#{Date.today} 22:00:00") && justhalfday[i][1] < f[2]
+							if justhalfday[i][2].hour == 22 && justhalfday[i][1] < f[2]
 								g.push(justhalfday[i])
 							end
 						end
 					else
 						justhalfday.count.times do |i|
-							if justhalfday[i][1] == DateTime.parse("#{Date.today} 13:00:00") && justhalfday[i][2] > f[1]
+							if justhalfday[i][1].hour == 13 && justhalfday[i][2] > f[1]
 								g.push(justhalfday[i])
 							end
 						end
 					end
-
 					if g == []
-						qa.push(allday.sample)
+						if allday == []
+							all = Shift.find_by(start: "#{Date.today} 13:00:00", end: "#{Date.today} 22:00:00")
+							# ここランダムにすると良い
+							qa.push([all.air_staff_id, all.start, all.end])
+						else
+							qa.push(allday.sample)
+						end
 					else
 						qa.push(g.sample)
 					end
@@ -519,6 +524,13 @@ class TopsController < ApplicationController
 
 		notifier.ping(message)
 		redirect_to main_path
+	end
+
+	def edit_qa
+		@qa = Day.where(shift_day: Date.today)
+	end
+
+	def qa_update
 	end
 
 	private

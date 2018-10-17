@@ -1,0 +1,23 @@
+<h3>ここはqaリーダー編集ページです</h3>
+
+
+
+<%= form_with url: qa_update_path, method: :patch do %>
+  <% @qa.each do |qa| %>
+    <%= fields_for "qa[]", qa do |f| %>
+      <%= Staff.find_by(air_staff_id: qa.qastaff_id).name %>
+      <%= f.time_select :start %>
+      ~
+      <%= f.time_select :end %><%= link_to "qaリーダーから外す" %>
+      <br>
+    <% end %>
+  <% end %>
+  <%= submit_tag %>
+<% end %>
+
+<style>
+  .delete_qa {
+    display: inline-block;
+    cursor: pointer;
+  }
+</style>
