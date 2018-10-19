@@ -325,7 +325,7 @@ class TopsController < ApplicationController
 		    	form.username = ''
 		    	form.password = ''
 
-		  	end.submie
+		  	end.submit
 
 		  	#HTMLにしている
 		  	doc = Nokogiri::HTML(mypage.content.toutf8)
