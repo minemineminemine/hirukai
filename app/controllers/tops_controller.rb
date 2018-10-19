@@ -325,7 +325,7 @@ class TopsController < ApplicationController
 		    	form.username = ''
 		    	form.password = ''
 
-		  	end.submit
+		  	end.submie
 
 		  	#HTMLにしている
 		  	doc = Nokogiri::HTML(mypage.content.toutf8)
@@ -485,7 +485,7 @@ class TopsController < ApplicationController
 		end while (i != 1 && i > 3)
 
 	    #スラックに投稿する関数を呼び出す
-	    post_slack
+	    # post_slack
 
 	    qa_make
 	end
@@ -528,14 +528,42 @@ class TopsController < ApplicationController
 
 	def edit_qa
 		@qa = Day.where(shift_day: Date.today)
+		@staff = Shift.where(date: Date.today)
 	end
 
-	def qa_update
+	def update_qa
+		qa_params.each do |f|
+			day = Day.find(f[0].to_i)
+			day.update(start: "#{Date.today} #{f[1]["start(4i)"]}:#{f[1]["start(5i)"]}:00", end: "#{Date.today} #{f[1]['end(4i)']}:#{f[1]['end(5i)']}:00")
+		end	
+	end
+
+	def delete_qa
+		Day.find(params[:id]).destroy
+		redirect_to qa_edit_path
+	end
+
+	def add_qa
+		puts add_qa_staff
+		day = Day.new()
+		day.shift_day = Date.today
+		day.qastaff_id = add_qa_staff["0"]
+		day.start = "#{Date.today} #{add_qa_staff["1"]}:#{add_qa_staff["2"]}:00"
+		day.end = "#{Date.today} #{add_qa_staff["3"]}:#{add_qa_staff["4"]}:00"
+		day.save
+		redirect_to qa_edit_path
 	end
 
 	private
 	def rest_params
 		params.require(:rest).permit(:rest_start, :rest_time)
+	end
+
+	def qa_params
+		params.require(:qa)
+	end
+	def add_qa_staff
+		params.require(:qa).permit("0", "1", "2", "3", "4")
 	end
 end
 

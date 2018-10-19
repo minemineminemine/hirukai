@@ -7,5 +7,7 @@ Rails.application.routes.draw do
   get "rests/:id/edit" => "tops#edit_rest",as: "rest_edit"
   patch "rests/edit" => "tops#rest_update",as: "rest_update"
   get "qa/edit" => "tops#edit_qa", as: "qa_edit"
-  patch "qa/edit" => "tops#qa_update",as: "qa_update"
+  patch "qa/edit" => "tops#update_qa",as: "qa_update"
+  get "qa/:id" => "tops#delete_qa", as: "qa_delete"
+  post "qa/edit" => "tops#add_qa", as: "qa_add"
 end

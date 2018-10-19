@@ -2,17 +2,53 @@
 
 
 
-<%= form_with url: qa_update_path, method: :patch do %>
+<%= form_with url: qa_update_path, method: :patch, class: "edit_form" do %>
   <% @qa.each do |qa| %>
     <%= fields_for "qa[]", qa do |f| %>
       <%= Staff.find_by(air_staff_id: qa.qastaff_id).name %>
-      <%= f.time_select :start %>
+      <%= f.time_select :start, {minute_step: 15, start_hour: 13, end_hour: 22} %>
       ~
-      <%= f.time_select :end %><%= link_to "qaリーダーから外す" %>
+      <%= f.time_select :end, {minute_step: 15, start_hour: 13, end_hour: 22} %><%= link_to "qaリーダーから外す", qa_delete_path(qa.id) %>
       <br>
     <% end %>
   <% end %>
-  <%= submit_tag %>
+  <%= submit_tag "Save Changes", :class => "edit_form_button" %>
+<% end %>
+qaリーダー足す
+<%= form_with url: qa_add_path, method: :post do %>
+  <select name="qa[0]" class="add_qa_select">
+    <option disabled="disabled" selected="selected">選択してください</option>
+    <%= @staff.each do |f| %>
+      <option value="<%= f.air_staff_id %>"><%= f.staff.name %></option>
+    <% end %>
+  </select>
+  <select name="qa[1]" class="hour1">
+    <% 10.times do |i| %>
+      <option value="<%= i+13 %>"><%= i+13 %></option>
+    <% end %>
+  </select>
+  :
+  <select name="qa[2]" class="min1">
+      <option value=00>00</option>
+      <option value=15>15</option>
+      <option value=30>30</option>
+      <option value=45>45</option>
+  </select>
+  ~
+  <select name="qa[3]" class="hour2">
+    <% 10.times do |i| %>
+      <option value="<%= i+13 %>"><%= i+13 %></option>
+    <% end %>
+  </select>
+  :
+  <select name="qa[4]" class="min2">
+      <option value=00>00</option>
+      <option value=15>15</option>
+      <option value=30>30</option>
+      <option value=45>45</option>
+  </select>
+
+  <%= submit_tag "Save Changes", :class => "add_qa" %>
 <% end %>
 
 <style>
@@ -21,3 +57,28 @@
     cursor: pointer;
   }
 </style>
+
+<script>
+  $(function() {
+    $(document).on('click', '.add_qa', function() {
+      if ($('.add_qa_select').val() == null) {
+        alert("スタッフを選択してください。");
+        return false;
+      }
+      var one = parseInt($('.hour1').val()+$('.min1').val());
+      var two = parseInt($('.hour2').val()+$('.min2').val());
+      if (one >= two) {
+        alert("時間がおかしいです。");
+        return false;
+      }
+    })
+    $(document).on('click', '.edit_form_button', function() {
+      var one = parseInt($('.edit_form').find($('select')).eq(0).val()+$('.edit_form').find($('select')).eq(1).val());
+      var two = parseInt($('.edit_form').find($('select')).eq(2).val()+$('.edit_form').find($('select')).eq(3).val());
+      if (one >= two) {
+        alert("時間がおかしいです。");
+        return false;
+      }
+    })
+  })
+</script>
