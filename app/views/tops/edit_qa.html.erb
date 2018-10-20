@@ -72,13 +72,13 @@ qaリーダー足す
         return false;
       }
     })
-    $(document).on('click', '.edit_form_button', function() {
-      var one = parseInt($('.edit_form').find($('select')).eq(0).val()+$('.edit_form').find($('select')).eq(1).val());
-      var two = parseInt($('.edit_form').find($('select')).eq(2).val()+$('.edit_form').find($('select')).eq(3).val());
-      if (one >= two) {
-        alert("時間がおかしいです。");
-        return false;
-      }
-    })
+    // $(document).on('click', '.edit_form_button', function() {
+    //   var one = parseInt($('.edit_form').find($('select')).eq(0).val()+$('.edit_form').find($('select')).eq(1).val());
+    //   var two = parseInt($('.edit_form').find($('select')).eq(2).val()+$('.edit_form').find($('select')).eq(3).val());
+    //   if (one >= two) {
+    //     alert("時間がおかしいです。");
+    //     return false;
+    //   }
+    // })
   })
 </script>
