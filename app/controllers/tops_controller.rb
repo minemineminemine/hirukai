@@ -213,8 +213,7 @@ class TopsController < ApplicationController
 				if staff.today_working_hour == 9
 					rest_new.rest_time = 60
 					rest_hour += 1
-				#次の不等式は書かなくてもいい
-				elsif staff.today_working_hour >= 6
+				else
 					rest_new.rest_time = 30
 					if rest_minute == 0
 						rest_minute = 30
@@ -233,12 +232,18 @@ class TopsController < ApplicationController
 			if rest_new.rest_time != nil
 				if rest_new.rest_start != nil
 			# 休憩がシフトの時間中に入っているかの確認
-					if rest_new.rest_start - rest_new.staff.today_start < Rational(1, 12)
+					if rest_new.rest_start - rest_new.staff.today_start < 7200
+						Rest.where(day: Date.today).destroy_all
+						rest_shift
+						binding.pry
 						# これはシフトが始まってから２時間立たないうちに休憩に入る場合
-						rest_new.rest_start = rest_new.staff.today_start + Rational(1, 12)
-					elsif rest_new.staff.today_end - rest_new.rest_start < Rational(1, 12)
+						# rest_new.rest_start = rest_new.staff.today_start + 7200
+					elsif rest_new.staff.today_end - rest_new.rest_start < 7200
+						binding.pry
+						Rest.where(day: Date.today).destroy_all
+						rest_shift
 						#これはシフトが終わりから２時間以内に休憩が入る場合
-						rest_new.rest_start = rest_new.staff.today_end - Rational(1, 8)
+						# rest_new.rest_start = rest_new.staff.today_end - 10800
 					end
 				end
 				rest_new.save
@@ -425,7 +430,6 @@ class TopsController < ApplicationController
 
 
 
-
 		#    #ここからデータを取りに行っている
 	    client = OAuth2::Client.new(client_id,client_secret,site: "https://accounts.google.com",token_url: "/o/oauth2/token",authorize_url: "/o/oauth2/auth")
 	    auth_token = OAuth2::AccessToken.from_hash(client,{:refresh_token => refresh_token, :expires_at => 3600})
@@ -475,7 +479,7 @@ class TopsController < ApplicationController
 					staff_train = staff.train_shifts.find_by(date: Date.today)
 
 					# 研修中に休憩が入っているかつ、研修の時間が2時間以内の時はもう一回休憩シフトを作る関数を呼び出す
-					if ((staff_rest.rest_start > staff_train.start && staff_rest.rest_start < staff_train.end) || ((staff_rest.rest_start + staff_rest.rest_time*60) > staff_train.start && (staff_rest.rest_start + staff_rest.rest_time*60) < staff_train.end)) && (staff_train.end - staff_train.start < Rational(1, 12))
+					if ((staff_rest.rest_start > staff_train.start && staff_rest.rest_start < staff_train.end) || ((staff_rest.rest_start + staff_rest.rest_time*60) > staff_train.start && (staff_rest.rest_start + staff_rest.rest_time*60) < staff_train.end)) && (staff_train.end - staff_train.start < 7200)
 						binding.pry
 						rest_shift
 						i += 1
@@ -484,15 +488,16 @@ class TopsController < ApplicationController
 			end
 		end while (i != 1 && i > 3)
 
-	    #スラックに投稿する関数を呼び出す
-	    # post_slack
 
-	    qa_make
+		qa_make
+      
+	  #スラックに投稿する関数を呼び出す
+	  post_slack
+	    # post_slack
 	end
 
 	def main
-		# rest_shift
-		# post_slack
+		rest_shift
 		@staffs = Staff.all
 
 		#これで今日のシフトがとれる
@@ -517,7 +522,7 @@ class TopsController < ApplicationController
 		before_end = rest.rest_start + rest.rest_time * 60
 		rest.update(rest_params)
 		notifier = Slack::Notifier.new(
-				""
+				"https://hooks.slack.com/services/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"
 		)
 		message = rest.staff.name + "さんの休憩時間を" + before_start.strftime("%H:%M") + "~" + before_end.strftime("%H:%M") + "から" + rest.rest_start.strftime("%H:%M") + "~" + (rest.rest_start + rest.rest_time * 60).strftime("%H:%M") + "に変更しました。ご確認お願いします。"
 
