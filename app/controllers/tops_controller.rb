@@ -116,7 +116,7 @@ class TopsController < ApplicationController
 					elsif todayshift[i][1].strftime("%Y-%m-%d %H:%M:%S") == "#{Date.today} 13:00:00" || todayshift[i][2].strftime("%Y-%m-%d %H:%M:%S") == "#{Date.today} 22:00:00"
 						justhalfday.push(todayshift[i])
 					else
-						halfday.push(todayshift)
+						# halfday.push(todayshift)
 					end
 				end
 
@@ -136,22 +136,27 @@ class TopsController < ApplicationController
 					qa.push(f)
 
 					g = []
-					if f[1] == DateTime.parse("#{Date.today} 13:00:00")
+					if f[1].hour == 13
 						justhalfday.count.times do |i|
-							if justhalfday[i][2] == DateTime.parse("#{Date.today} 22:00:00") && justhalfday[i][1] < f[2]
+							if justhalfday[i][2].hour == 22 && justhalfday[i][1] < f[2]
 								g.push(justhalfday[i])
 							end
 						end
 					else
 						justhalfday.count.times do |i|
-							if justhalfday[i][1] == DateTime.parse("#{Date.today} 13:00:00") && justhalfday[i][2] > f[1]
+							if justhalfday[i][1].hour == 13 && justhalfday[i][2] > f[1]
 								g.push(justhalfday[i])
 							end
 						end
 					end
-
 					if g == []
-						qa.push(allday.sample)
+						if allday == []
+							all = Shift.find_by(start: "#{Date.today} 13:00:00", end: "#{Date.today} 22:00:00")
+							# ここランダムにすると良い
+							qa.push([all.air_staff_id, all.start, all.end])
+						else
+							qa.push(allday.sample)
+						end
 					else
 						qa.push(g.sample)
 					end
@@ -485,8 +490,10 @@ class TopsController < ApplicationController
 
 
 		qa_make
-	    #スラックに投稿する関数を呼び出す
-	    post_slack
+      
+	  #スラックに投稿する関数を呼び出す
+	  post_slack
+	    # post_slack
 	end
 
 	def main
@@ -524,9 +531,44 @@ class TopsController < ApplicationController
 		redirect_to main_path
 	end
 
+	def edit_qa
+		@qa = Day.where(shift_day: Date.today)
+		@staff = Shift.where(date: Date.today)
+	end
+
+	def update_qa
+		qa_params.each do |f|
+			day = Day.find(f[0].to_i)
+			day.update(start: "#{Date.today} #{f[1]["start(4i)"]}:#{f[1]["start(5i)"]}:00", end: "#{Date.today} #{f[1]['end(4i)']}:#{f[1]['end(5i)']}:00")
+		end	
+	end
+
+	def delete_qa
+		Day.find(params[:id]).destroy
+		redirect_to qa_edit_path
+	end
+
+	def add_qa
+		puts add_qa_staff
+		day = Day.new()
+		day.shift_day = Date.today
+		day.qastaff_id = add_qa_staff["0"]
+		day.start = "#{Date.today} #{add_qa_staff["1"]}:#{add_qa_staff["2"]}:00"
+		day.end = "#{Date.today} #{add_qa_staff["3"]}:#{add_qa_staff["4"]}:00"
+		day.save
+		redirect_to qa_edit_path
+	end
+
 	private
 	def rest_params
 		params.require(:rest).permit(:rest_start, :rest_time)
+	end
+
+	def qa_params
+		params.require(:qa)
+	end
+	def add_qa_staff
+		params.require(:qa).permit("0", "1", "2", "3", "4")
 	end
 end
 
