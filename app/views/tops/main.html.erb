@@ -52,23 +52,27 @@
 <h2>今日の休憩シフトです</h2>
 <table>
 	<thead>
-		<th></th><th>名前</th><th>休憩時間</th>
+		<th></th><th>名前</th><th>休憩時間</th><th>開始時間</th>
 	</thead>
 	<tbody>
 		<% @rests.order("group_id").each do |rest| %>
 			<tr>
-				<td><%= rest.group_id %></td>
-				<td><%= rest.staff.name %></td>
-				<td>
-					<% if rest.rest_time != 0 %>
-						<%= rest.rest_start.strftime("%H:%M") %>~<%= (rest.rest_start + rest.rest_time*60).strftime("%H:%M") %>
-					<% else %>
-						研修中に取ってください
-					<% end %>
-				</td>
-				<td><%= link_to "編集する",rest_edit_path(rest) %></td>
-			</tr>
-		<% end %>
+				<% if rest.rest_start != nil%>
+	                <td><%= rest.group_id %></td>
+	                <td><%= rest.staff.name %></td>
+	                <td>
+	                    <%= rest.rest_time %>
+	                </td>
+	                <td><%= rest.rest_start.strftime("%H:%M") %>~<%= (rest.rest_start + rest.rest_time*60).strftime("%H:%M") %></td>
+	                <td><%= link_to "編集する",rest_edit_path(rest) %></td>
+		        <% elsif %>
+		        	<td><%= rest.group_id %></td>
+		        	<td><%= rest.staff.name %></td>
+		        	<td><%= rest.rest_time %></td>
+		        	<td>各自取ってください</td>
+		       	<% end %>
+	       	<tr>
+        <% end %>
 	</tbody>
 </table>
 
@@ -78,7 +82,7 @@
 		<th style="text-align: left">名前</th><th>QA時間</th>
 	</thead>
 	<tbody>
-		<% @days.each do |user| %>
+		<% @days.order("start").each do |user| %>
 			<tr>
 				<td><%= Staff.find_by(air_staff_id: user.qastaff_id).name %></td>
 				<td><%= user.start.strftime("%H:%M") %></td>
@@ -91,5 +95,10 @@
 
 <h2>メンバー全員の名前です</h2>
 <% @staffs.each do |user| %>
-<%= user.name %>:<%= user.today_working_hour %><br>
+<%= user.name %>:
+	<% if user.today_work != nil %>
+	<%= user.today_work.start.strftime("%H:%M") %>~<%= user.today_work.end.strftime("%H:%M") %>
+	<%= user.today_work.working_hour %>
+	<% end %>
+	<br>
 <% end %>

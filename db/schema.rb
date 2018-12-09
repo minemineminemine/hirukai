@@ -10,13 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_10_02_235533) do
-
-  create_table "data", force: :cascade do |t|
-    t.text "doc"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
+ActiveRecord::Schema.define(version: 2018_12_04_051951) do
 
   create_table "days", force: :cascade do |t|
     t.date "shift_day"
@@ -51,9 +45,16 @@ ActiveRecord::Schema.define(version: 2018_10_02_235533) do
   create_table "staffs", force: :cascade do |t|
     t.string "name"
     t.string "air_staff_id"
-    t.float "today_working_hour", default: 0.0
-    t.datetime "today_start"
-    t.datetime "today_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "today_works", force: :cascade do |t|
+    t.float "working_hour", default: 0.0
+    t.datetime "start"
+    t.datetime "end"
+    t.date "day"
+    t.integer "staff_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
